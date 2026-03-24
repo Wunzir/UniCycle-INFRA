@@ -34,6 +34,9 @@ services:
       - SPRING_PROFILES_ACTIVE = dev
     depends_on:
       - database
+    volumes:
+      # Maps a local folder called "uploads" to the container's /app/uploads folder.
+      - ./uploads:/app/uploads
 
   # 3: The FE service
   frontend:
