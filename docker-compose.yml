@@ -1,0 +1,57 @@
+services:
+  # 1: The DB service
+  database:
+    image: postgres:latest
+    container_name: UniCycle-DB
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: unicycle_db
+    # This volume ensures that the database data isn't deleted when the
+    # container is removed.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2: The BE service
+  backend:
+    container_name: UniCycle-BE
+    build:
+      # Step out of the infra folder and into the BE folder
+      context: ../unicycle-BE
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Connect to the database using the service name "database" as the hostname
+      - SPRING_DATASOURCE_URL = jdbc:postgresql://database:5432/unicycle-DB
+      - SPRING_DATASOURCE_USERNAME = user
+      - SPRING_DATASOURCE_PASSWORD = pass
+      # Helpful for viewing logs locally, but we might want to change this in
+      # production to avoid logging sensitive information.
+      - SPRING_PROFILES_ACTIVE = dev
+    depends_on:
+      - database
+
+  # 3: The FE service
+  frontend:
+    container_name: UniCycle-FE
+    build:
+      # Step out of the infra folder and into the FE folder
+      context: ../unicycle-FE
+      dockerfile: Dockerfile
+    ports:
+      # Map our machine's port 3000 to the container's Nginx server port 80
+      - "3000:80"
+    depends_on:
+      # Ensures the backend service is up and running before Nginx tries to
+      # route API calls to it.
+      - backend
+
+# Defines the persistent volumes for UniCycle. For now, we only have one for
+# the database but we might need one for the backend in the future if we want
+# to persist logs or save uploaded files.
+volumes:
+  postgres_data:
