@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME
+      POSTGRES_DB: ${DB_NAME}
     # This volume ensures that the database data isn't deleted when the
     # container is removed.
     volumes:
