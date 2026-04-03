@@ -2,14 +2,14 @@ services:
   # 1: The DB service
   database:
     image: postgres:latest
-    container_name: UniCycle-DB
+    container_name: unicycle-db
     restart: always
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: unicycle_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME
     # This volume ensures that the database data isn't deleted when the
     # container is removed.
     volumes:
@@ -17,7 +17,7 @@ services:
 
   # 2: The BE service
   backend:
-    container_name: UniCycle-BE
+    container_name: unicycle-be
     build:
       # Step out of the infra folder and into the BE folder
       context: ../unicycle-BE
@@ -26,12 +26,12 @@ services:
       - "8000:8000"
     environment:
       # Connect to the database using the service name "database" as the hostname
-      - SPRING_DATASOURCE_URL = jdbc:postgresql://database:5432/unicycle-DB
-      - SPRING_DATASOURCE_USERNAME = user
-      - SPRING_DATASOURCE_PASSWORD = pass
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       # Helpful for viewing logs locally, but we might want to change this in
       # production to avoid logging sensitive information.
-      - SPRING_PROFILES_ACTIVE = dev
+      - SPRING_PROFILES_ACTIVE=dev
     depends_on:
       - database
     volumes:
@@ -40,7 +40,7 @@ services:
 
   # 3: The FE service
   frontend:
-    container_name: UniCycle-FE
+    container_name: unicycle-fe
     build:
       # Step out of the infra folder and into the FE folder
       context: ../unicycle-FE
@@ -54,7 +54,7 @@ services:
       - backend
 
 # Defines the persistent volumes for UniCycle. For now, we only have one for
-# the database but we might need one for the backend in the future if we want
+# the database, but we might need one for the backend in the future if we want
 # to persist logs or save uploaded files.
 volumes:
   postgres_data:
