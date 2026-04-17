@@ -22,7 +22,7 @@ services:
       context: ../unicycle-BE
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     environment:
       # Connect to the database using the service name "database" as the hostname
       - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/${DB_NAME}
@@ -34,8 +34,15 @@ services:
     depends_on:
       - database
     volumes:
-      # Maps a local folder called "uploads" to the container's /app/uploads folder.
+      # We bind mount the UniCycle-BE folder directly into the container.
+      # If we make any code changes, the container will automatically see
+      # those changes.
+      - ../UniCycle-BE:/app
+      # Maps a local folder called "uploads" to the container's /app/uploads
+      # folder.
       - ./uploads:/app/uploads
+    # We command the container to use Gradle to run the raw source code.
+    command: ./gradlew bootRun
 
   # 3: The FE service
   frontend:
