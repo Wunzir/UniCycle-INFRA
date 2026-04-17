@@ -22,7 +22,7 @@ services:
       context: ../unicycle-BE
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     environment:
       # Connect to the database using the service name "database" as the hostname
       - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/${DB_NAME}
