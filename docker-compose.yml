@@ -2,7 +2,7 @@ services:
   # 1: The DB service
   database:
     image: postgres:18-alpine
-    container_name: unicycle-db
+    container_name: UniCycle-DB
     ports:
       - "5432:5432"
     environment:
@@ -16,10 +16,10 @@ services:
 
   # 2: The BE service
   backend:
-    container_name: unicycle-be
+    container_name: UniCycle-BE
     build:
       # Step out of the infra folder and into the BE folder
-      context: ../unicycle-BE
+      context: ../UniCycle-BE
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -28,6 +28,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/${DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
       # Helpful for viewing logs locally, but we might want to change this in
       # production to avoid logging sensitive information.
       - SPRING_PROFILES_ACTIVE=dev
@@ -46,10 +47,10 @@ services:
 
   # 3: The FE service
   frontend:
-    container_name: unicycle-fe
+    container_name: UniCycle-FE
     build:
       # Step out of the infra folder and into the FE folder
-      context: ../unicycle-FE
+      context: ../UniCycle-FE
       dockerfile: Dockerfile
     ports:
       # Map our machine's port 3000 to the container's Nginx server port 80
