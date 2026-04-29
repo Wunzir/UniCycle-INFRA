@@ -15,10 +15,23 @@ workspace "UniCycle" "Multi-tenant marketplace for university ecosystems" {
 
             unicycle = softwareSystem "UniCycle Platform" "A multi-tenant, centralized circular economy platform providing isolated, high-trust marketplaces." "MainSystem" {
 
-                # --- NEW: C2 CONTAINERS ---
                 webApp = container "Web Application" "Provides the marketplace UI, login, and listing creation for users." "React" "WebBrowser"
-                apiApp = container "API Application" "Provides marketplace functionality, JWT authentication, and secure routing via a JSON/HTTP API." "Spring Boot" "Backend"
                 database = container "Database" "Stores multi-tenant university data, user profiles, and active listings." "PostgreSQL" "Database"
+
+                apiApp = container "API Application" "Provides marketplace functionality, JWT authentication, and secure routing via a JSON/HTTP API." "Spring Boot" "Backend" {
+
+                    # --- NEW: Updated C3 Components ---
+                    securityComponent = component "Security Filter" "Validates JWT tokens and secures endpoints." "Spring Security" "Component"
+                    authController = component "Sign In API" "Endpoint for user authentication and token generation." "Spring MVC RestController" "Component"
+
+                    profileController = component "Profile API" "Endpoints for managing user profiles, personal listings, and reviews." "Spring MVC RestController" "Component"
+                    profileService = component "Profile Service" "Contains business logic for user accounts and reviews." "Spring Bean" "Component"
+
+                    listingController = component "Listings API" "Endpoints for creating and browsing marketplace listings." "Spring MVC RestController" "Component"
+                    listingService = component "Listing Service" "Contains core business logic and multi-tenant routing for items." "Spring Bean" "Component"
+
+                    repository = component "Database Repository" "Handles data access to the database." "Spring Data JPA" "Component"
+                }
             }
         }
 
@@ -30,29 +43,46 @@ workspace "UniCycle" "Multi-tenant marketplace for university ecosystems" {
         platformAdmin -> webApp "Configures tenants and manages global infrastructure using" "HTTPS"
         uniAdmin -> webApp "Designates safe zones and views campus analytics using" "HTTPS"
 
-        # Internal Container Interactions
-        webApp -> apiApp "Makes API requests to" "JSON/HTTPS"
-        apiApp -> database "Reads from and writes to" "SQL/TCP"
+        # React talking to Spring Boot endpoints
+        webApp -> authController "Makes API requests to authenticate using" "JSON/HTTPS"
+        webApp -> profileController "Makes API requests for profile data using" "JSON/HTTPS"
+        webApp -> listingController "Makes API requests for marketplace items using" "JSON/HTTPS"
 
-        # Backend to External Systems
-        apiApp -> identityProvider "Verifies student identity via .edu routing using" "JSON/HTTPS"
+        # Security Validation Arrows
+        authController -> securityComponent "Delegates token generation to"
+        profileController -> securityComponent "Validates tokens and permissions using"
+        listingController -> securityComponent "Validates tokens and permissions using"
+
+        securityComponent -> identityProvider "Verifies student identity via .edu routing using" "JSON/HTTPS"
+
+        # Internal Business Logic Routing
+        profileController -> profileService "Delegates business logic to"
+        listingController -> listingService "Delegates business logic to"
+
+        profileService -> repository "Uses for data access"
+        listingService -> repository "Uses for data access"
+
+        # Spring Boot talking to Postgres
+        repository -> database "Reads from and writes to" "SQL/TCP"
     }
 
     views {
-        # VIEW 1: The System Landscape (Level 0)
         systemLandscape "Landscape" "The System Landscape view for the UniCycle platform." {
             include *
             autoLayout
         }
 
-        # VIEW 2: The System Context (Level 1)
         systemContext unicycle "Context" "The System Context view for the UniCycle Platform." {
             include *
             autoLayout
         }
 
-        # VIEW 3: The Container Diagram (Level 2) - NEW!
         container unicycle "Containers" "The Container view for the UniCycle Platform." {
+            include *
+            autoLayout
+        }
+
+        component apiApp "Components" "The Component view for the API Application." {
             include *
             autoLayout
         }
@@ -79,7 +109,6 @@ workspace "UniCycle" "Multi-tenant marketplace for university ecosystems" {
                 color #ffffff
                 shape roundedbox
             }
-            # Container-specific shapes
             element "WebBrowser" {
                 background #1168bd
                 color #ffffff
@@ -94,6 +123,11 @@ workspace "UniCycle" "Multi-tenant marketplace for university ecosystems" {
                 background #1168bd
                 color #ffffff
                 shape Cylinder
+            }
+            element "Component" {
+                background #ffffff
+                color #1168bd
+                shape Component
             }
         }
     }

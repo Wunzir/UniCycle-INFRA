@@ -5,3 +5,5 @@
 ![UniCycle System Context](system-context.png)
 ## Container Diagram (C2)
 ![UniCycle Container Diagram](container.png)
+## Component Diagram (C3)
+![UniCycle Component Diagram](component.png)
